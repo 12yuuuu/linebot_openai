@@ -17,7 +17,7 @@ handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
 def GPT_response(text):
     # Hugging Face API URL
     HF_API_URL = "https://api-inference.huggingface.co/models/gpt2"
-    HF_API_TOKEN = os.getenv('OPENAI_API_KEY')
+    HF_API_TOKEN = os.getenv('HUGGING_FACE_API_KEY')
     
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
     payload = {"inputs": text, "options": {"wait_for_model": True}}
