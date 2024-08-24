@@ -14,6 +14,9 @@ import datetime
 import openai
 import time
 import traceback
+from message import *
+from new import *
+from Function import *
 #======python的函數庫==========
 
 app = Flask(__name__)
