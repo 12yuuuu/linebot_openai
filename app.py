@@ -29,12 +29,12 @@ QA_DICT = {
 
     # 帳戶管理
     "查看帳戶餘額": "抱歉，我現在無法顯示實際的帳戶餘額。這個功能需要與真實的帳戶系統集成。",
-    "記錄支出": "要記錄支出，請說「支出」，然後告訴我金額和類別。例如：「支出：50元，午餐」。",
-    "記錄收入": "要記錄收入，請說「收入」，然後告訴我金額和來源。例如：「收入：1000元，薪水」。",
+    "記錄支出": "要記錄支出，請說「支出」，然後告訴我金額和類別。例如：「支出50元，午餐」。",
+    "記錄收入": "要記錄收入，請說「收入」，然後告訴我金額和來源。例如：「收入1000元，薪水」。",
     "查看本月支出": "我可以幫你統計本月的支出情況。這可以幫助你更好地管理財務。",
 
     # 提醒功能
-    "設置提醒": "要設置提醒，請說「提醒」，然後告訴我內容和時間。例如：「提醒：下午3點開會」。",
+    "設置提醒": "要設置提醒，請說「提醒」，然後告訴我內容和時間。例如：「提醒下午3點開會」。",
     "查看所有提醒": "好的，我會列出你所有的提醒事項。請注意，這需要與日曆或提醒系統集成。",
 
     # 其他功能
@@ -69,14 +69,18 @@ def handle_message(event):
         response = QA_DICT[msg]
     else:
         # Check if the message starts with specific keywords
-        if msg.startswith("記錄："):
-            response = "好的，我已經記錄下來了：" + msg[3:]
-        elif msg.startswith("支出："):
-            response = "已記錄支出：" + msg[3:]
-        elif msg.startswith("收入："):
-            response = "已記錄收入：" + msg[3:]
-        elif msg.startswith("提醒："):
-            response = "好的，我會提醒你：" + msg[3:]
+        if msg.startswith("記錄"):
+            response = "好的，我已經記錄下來了：" + msg[2:]
+        elif msg.startswith("今天"):
+            response = "已記錄今天" + msg[2:] + "，哈哈"
+        elif msg.startswith("支出"):
+            response = "已記錄支出：" + msg[2:]
+        elif msg.startswith("收入"):
+            response = "已記錄收入：" + msg[2:]
+        elif msg.startswith("提醒"):
+            response = "好的，我會提醒你：" + msg[2:]
+        elif msg.startswith("刪除"):
+            response = "不能刪喔，哈哈"
         else:
             response = QA_DICT["default"]
     
