@@ -69,13 +69,13 @@ def handle_message(event):
         response = QA_DICT[msg]
     else:
         # Check if the message starts with specific keywords
-        if msg.startswith("記錄:"):
+        if msg.startswith("記錄："):
             response = "好的，我已經記錄下來了：" + msg[3:]
-        elif msg.startswith("支出:"):
+        elif msg.startswith("支出："):
             response = "已記錄支出：" + msg[3:]
-        elif msg.startswith("收入:"):
+        elif msg.startswith("收入："):
             response = "已記錄收入：" + msg[3:]
-        elif msg.startswith("提醒:"):
+        elif msg.startswith("提醒："):
             response = "好的，我會提醒你：" + msg[3:]
         else:
             response = QA_DICT["default"]
