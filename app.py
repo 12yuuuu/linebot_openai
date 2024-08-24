@@ -1,42 +1,30 @@
 from flask import Flask, request, abort
-
-from linebot import (
-    LineBotApi, WebhookHandler
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage, 
+    PostbackEvent, MemberJoinedEvent
 )
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import *
-
-#======python的函數庫==========
-import tempfile, os
-import datetime
-import openai
-import time
-import traceback
-from message import *
-from new import *
-from Function import *
-#======python的函數庫==========
+import os
+from message import imagemap_message, buttons_message, Confirm_Template, Carousel_Template
+from Function import function_list
 
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
+
 # Channel Access Token
 line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
 # Channel Secret
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
-# OPENAI API Key初始化設定
-openai.api_key = os.getenv('OPENAI_API_KEY')
 
-
-def GPT_response(text):
-    # 接收回應
-    response = openai.Completion.create(model="gpt-3.5-turbo-instruct", prompt=text, temperature=0.5, max_tokens=500)
-    print(response)
-    # 重組回應
-    answer = response['choices'][0]['text'].replace('。','')
-    return answer
-
+# Predefined Q&A dictionary
+QA_DICT = {
+    "你好": "你好！有什麼我可以幫助你的嗎？",
+    "你是誰": "我是一個簡單的Line機器人，可以回答一些基本問題。",
+    "現在幾點": "對不起，我沒有時鐘功能。請查看您的設備時間。",
+    "天氣如何": "我無法提供實時天氣信息。請查看天氣應用或網站以獲取準確信息。",
+    # Add more Q&A pairs here...
+}
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
@@ -53,48 +41,45 @@ def callback():
         abort(400)
     return 'OK'
 
-
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     msg = event.message.text
-    if '最新合作廠商' in msg:
+    if msg in QA_DICT:
+        response = QA_DICT[msg]
+    elif '最新合作廠商' in msg:
         message = imagemap_message()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     elif '最新活動訊息' in msg:
         message = buttons_message()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     elif '註冊會員' in msg:
         message = Confirm_Template()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     elif '旋轉木馬' in msg:
         message = Carousel_Template()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     elif '圖片畫廊' in msg:
         message = test()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     elif '功能列表' in msg:
         message = function_list()
         line_bot_api.reply_message(event.reply_token, message)
+        return
     else:
-        message = TextSendMessage(text=msg)
-        line_bot_api.reply_message(event.reply_token, message)
-# @handler.add(MessageEvent, message=TextMessage)
-# def handle_message(event):
-#     msg = event.message.text
-#     try:
-#         GPT_answer = GPT_response(msg)
-#         print(GPT_answer)
-#         line_bot_api.reply_message(event.reply_token, TextSendMessage(GPT_answer))
-#     except:
-#         print(traceback.format_exc())
-#         line_bot_api.reply_message(event.reply_token, TextSendMessage('你所使用的OPENAI API key額度可能已經超過，請於後台Log內確認錯誤訊息'))
-        
+        response = "對不起，我不理解您的問題。請嘗試其他問題或查看功能列表。"
+    
+    message = TextSendMessage(text=response)
+    line_bot_api.reply_message(event.reply_token, message)
 
 @handler.add(PostbackEvent)
-def handle_message(event):
+def handle_postback(event):
     print(event.postback.data)
-
 
 @handler.add(MemberJoinedEvent)
 def welcome(event):
@@ -104,11 +89,7 @@ def welcome(event):
     name = profile.display_name
     message = TextSendMessage(text=f'{name}歡迎加入')
     line_bot_api.reply_message(event.reply_token, message)
-        
-        
-import os
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
-
