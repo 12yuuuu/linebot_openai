@@ -63,30 +63,59 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    msg = event.message.text.strip().lower()
+    user_id = event.source.user_id
+    msg = event.message.text.strip()
+    lower_msg = msg.lower()
     
-    if msg in QA_DICT:
-        response = QA_DICT[msg]
+    if lower_msg in QA_DICT:
+        response = QA_DICT[lower_msg]
     else:
         # Check if the message starts with specific keywords
         if msg.startswith("記錄"):
-            response = "好的，我已經記錄下來了：" + msg[2:]
+            content = msg[2:].strip()
+            if user_id not in records:
+                records[user_id] = []
+            records[user_id].append((datetime.now(), content))
+            response = f"好的，我已經記錄下來了：{content}"
         elif msg.startswith("今天"):
-            response = "已記錄今天" + msg[2:] + "，哈哈"
+            content = msg[2:].strip()
+            if user_id not in records:
+                records[user_id] = []
+            records[user_id].append((datetime.now(), f"今天{content}"))
+            response = f"已記錄今天{content}，哈哈"
         elif msg.startswith("支出"):
-            response = "已記錄支出：" + msg[2:]
+            content = msg[2:].strip()
+            if user_id not in records:
+                records[user_id] = []
+            records[user_id].append((datetime.now(), f"支出：{content}"))
+            response = f"已記錄支出：{content}"
         elif msg.startswith("收入"):
-            response = "已記錄收入：" + msg[2:]
+            content = msg[2:].strip()
+            if user_id not in records:
+                records[user_id] = []
+            records[user_id].append((datetime.now(), f"收入：{content}"))
+            response = f"已記錄收入：{content}"
         elif msg.startswith("提醒"):
-            response = "好的，我會提醒你：" + msg[2:]
+            content = msg[2:].strip()
+            if user_id not in records:
+                records[user_id] = []
+            records[user_id].append((datetime.now(), f"提醒：{content}"))
+            response = f"好的，我會提醒你：{content}"
         elif msg.startswith("刪除"):
             response = "不能刪喔，哈哈"
+        elif msg == "查看記錄":
+            if user_id in records and records[user_id]:
+                response = "以下是你的記錄：\n"
+                for date, content in records[user_id][-10:]:  # Show last 10 records
+                    response += f"{date.strftime('%Y-%m-%d %H:%M')} - {content}\n"
+            else:
+                response = "你還沒有任何記錄哦！"
         else:
             response = QA_DICT["default"]
     
     message = TextSendMessage(text=response)
     line_bot_api.reply_message(event.reply_token, message)
-
+    
 @handler.add(PostbackEvent)
 def handle_postback(event):
     print(event.postback.data)
